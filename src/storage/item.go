@@ -109,7 +109,7 @@ func (s *Storage) CreateItems(items []Item) bool {
 
 	for _, item := range itemsSorted {
 		_, err = tx.Exec(`
-			insert into items (
+			insert items (
 				guid, feed_id, title, link, date,
 				content, image, podcast_url,
 				date_arrived, status
@@ -355,7 +355,7 @@ func (s *Storage) SyncSearch() {
 
 	for _, item := range items {
 		result, err := s.db.Exec(`
-			insert into search (title, description, content) values (?, "", ?)`,
+			insert search (title, description, content) values (?, "", ?)`,
 			item.Title, htmlutil.ExtractText(item.Content),
 		)
 		if err != nil {
