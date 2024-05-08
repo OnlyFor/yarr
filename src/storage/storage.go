@@ -10,10 +10,15 @@ type Storage struct {
 }
 
 func New(path string) (*Storage, error) {
-	db, err := sql.Open("sqlite3_with_extensions", path)
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
 	}
+
+	// _, err = db.Exec("select load_extension('sqlite3_mod_regexp.dll')")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
