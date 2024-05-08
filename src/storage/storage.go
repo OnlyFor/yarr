@@ -10,7 +10,7 @@ type Storage struct {
 }
 
 func New(path string) (*Storage, error) {
-	db, err := sql.Open("sqlite3", path)
+	db, err := sql.Open("sqlite3_with_extensions", path)
 	if err != nil {
 		return nil, err
 	}
