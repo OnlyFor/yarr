@@ -11,16 +11,14 @@ type Storage struct {
 
 func New(path string) (*Storage, error) {
 
-	sql.Register(
-		"sqlite3_with_extensions",
+	sql.Register("sqlite3_with_extensions",
 		&sqlite3.SQLiteDriver{
 			Extensions: []string{
 				"libsqlite_zstd",
 			},
-		}
-	)
+		})
 
-	db, err := sql.Open("sqlite3_with_extensions", path)
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
 	}
