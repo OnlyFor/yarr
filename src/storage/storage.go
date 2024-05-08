@@ -14,7 +14,7 @@ func New(path string) (*Storage, error) {
 	sql.Register("sqlite3_with_extensions",
 		&sqlite3.SQLiteDriver{
 			Extensions: []string{
-				"libsqlite_zstd",
+				"/usr/local/lib/libsqlite_zstd.so",
 			},
 		})
 
