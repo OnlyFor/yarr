@@ -14,7 +14,7 @@ func New(path string) (*Storage, error) {
 	sql.Register("sqlite3_with_extensions",
 		&sqlite3.SQLiteDriver{
 			Extensions: []string{
-				"/usr/local/lib/zstd_vfs.so",
+				"/usr/local/lib/libsqlite_zstd.so",
 			},
 		})
 
@@ -23,16 +23,11 @@ func New(path string) (*Storage, error) {
 		return nil, err
 	}
 
-	// _, err = db.Exec("select load_extension('sqlite3_mod_regexp.dll')")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
 
-	// if err = migrate(db); err != nil {
-	// 	return nil, err
-	// }
+	if err = migrate(db); err != nil {
+		return nil, err
+	}
 	return &Storage{db: db}, nil
 }
