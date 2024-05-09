@@ -24,11 +24,6 @@ func New(path string) (*Storage, error) {
 		return nil, err
 	}
 
-    _, err = db.Exec("SELECT load_extension('/usr/local/lib/zstd_vfs.so')")
-    if err != nil {
-		return nil, err
-    }
-
     _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' ", path))
     if err != nil {
 		return nil, err
