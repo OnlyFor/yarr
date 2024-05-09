@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"database/sql"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
