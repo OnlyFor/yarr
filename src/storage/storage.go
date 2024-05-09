@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"database/sql"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
@@ -22,17 +23,16 @@ func New(path string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
 
-	db, err := sql.Open("sqlite3_with_extensions", path)
-	if err != nil {
+    _, err = db.Exec("SELECT load_extension('/usr/local/lib/zstd_vfs.so')")
+    if err != nil {
 		return nil, err
-	}
+    }
 
-    // _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' AS loaded_db", path))
-    // if err != nil {
-	// 	return nil, err
-    // }
+    _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' ", path))
+    if err != nil {
+		return nil, err
+    }
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
 
