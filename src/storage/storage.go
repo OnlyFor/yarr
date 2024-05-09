@@ -24,11 +24,6 @@ func New(path string) (*Storage, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("SELECT load_extension('/usr/local/lib/libsqlite_zstd.so')")
-	if err != nil {
-		return nil, err
-	}
-
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
 
