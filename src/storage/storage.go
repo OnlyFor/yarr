@@ -18,6 +18,10 @@ func New(path string) (*Storage, error) {
 			},
 		})
 
+	db, err := sql.Open("sqlite3_with_extensions", ":memory:")
+	if err != nil {
+		return nil, err
+	}
 	db, err := sql.Open("sqlite3_with_extensions", path)
 	if err != nil {
 		return nil, err
