@@ -25,14 +25,19 @@ func New(path string) (*Storage, error) {
 	}
 
     _, err = db.Exec("SELECT load_extension('/usr/local/lib/zstd_vfs.so')")
-    if err != nil {
+	if err != nil {
 		return nil, err
-    }
+	}
 
-    _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' as main ", path))
-    if err != nil {
+	_, err = db.Exec("PRAGMA writable_schema = 1")
+	if err != nil {
 		return nil, err
-    }
+	}
+
+    _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' ", path))
+	if err != nil {
+		return nil, err
+	}
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
 
