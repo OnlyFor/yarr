@@ -22,11 +22,10 @@ func New(path string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	db, err := sql.Open("sqlite3_with_extensions", path)
-	if err != nil {
+    _, err = db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' AS loaded_db", path))
+    if err != nil {
 		return nil, err
-	}
-
+    }
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
 
