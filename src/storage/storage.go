@@ -11,15 +11,15 @@ type Storage struct {
 
 func New(path string) (*Storage, error) {
 
-	sql.Register("sqlite3_with_extensions",
-		&sqlite3.SQLiteDriver{
-			Extensions: []string{
-				"/usr/local/lib/libsqlite_zstd.so",
-			},
-		})
+	// sql.Register("sqlite3_with_extensions",
+	// 	&sqlite3.SQLiteDriver{
+	// 		Extensions: []string{
+	// 			"/usr/local/lib/libsqlite_zstd.so",
+	// 		},
+	// 	})
+	// db, err := sql.Open("sqlite3_with_extensions", path)
 
-	// db, err := sql.Open("sqlite3", path)
-	db, err := sql.Open("sqlite3_with_extensions", path)
+	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
 	}
