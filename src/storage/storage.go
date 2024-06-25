@@ -25,14 +25,14 @@ func New(path string) (*Storage, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("PRAGMA auto_vacuum = full;")
-	if err != nil {
-		return nil, err
-	}
-	_, err = db.Exec("PRAGMA journal_mode = MEMORY;")
-	if err != nil {
-		return nil, err
-	}
+	// _, err = db.Exec("PRAGMA auto_vacuum = full;")
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// _, err = db.Exec("PRAGMA journal_mode = MEMORY;")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// TODO: https://foxcpp.dev/articles/the-right-way-to-use-go-sqlite3
 	db.SetMaxOpenConns(1)
