@@ -2,6 +2,8 @@ package storage
 
 import (
 	"database/sql"
+	"log"
+	"strings"
 	// sqlite3 "github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -11,7 +13,6 @@ type Storage struct {
 }
 
 func New(path string) (*Storage, error) {
-
 	// sql.Register("sqlite3_with_extensions",
 	// 	&sqlite3.SQLiteDriver{
 	// 		Extensions: []string{
@@ -19,6 +20,11 @@ func New(path string) (*Storage, error) {
 	// 		},
 	// 	})
 	// db, err := sql.Open("sqlite3_with_extensions", path)
+	if pos := strings.IndexRune(path, '?'); pos == -1 {
+        params := "_journal=WAL&_sync=NORMAL&_busy_timeout=5000&cache=shared"
+        log.Printf("opening db with params: %s", params)
+        path = path + "?" + params
+    }
 
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
