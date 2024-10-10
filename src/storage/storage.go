@@ -21,10 +21,10 @@ func New(path string) (*Storage, error) {
 	// 	})
 	// db, err := sql.Open("sqlite3_with_extensions", path)
 	if pos := strings.IndexRune(path, '?'); pos == -1 {
-        params := "_journal=WAL&_sync=NORMAL&_busy_timeout=5000&cache=shared"
-        log.Printf("opening db with params: %s", params)
-        path = path + "?" + params
-    }
+		params := "_journal=WAL&_sync=NORMAL&_busy_timeout=5000&cache=shared"
+		log.Printf("opening db with params: %s", params)
+		path = path + "?" + params
+	}
 
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
