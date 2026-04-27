@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"log"
 	"reflect"
 	"strconv"
@@ -46,21 +47,62 @@ func testItemsSetup(db *Storage) testItemScope {
 	db.CreateItems([]Item{
 		// feed11
 		{GUID: "item111", FeedId: feed11.Id, Title: "title111", Date: now.Add(time.Hour * 24 * 1)},
-		{GUID: "item112", FeedId: feed11.Id, Title: "title112", Date: now.Add(time.Hour * 24 * 2)}, // read
-		{GUID: "item113", FeedId: feed11.Id, Title: "title113", Date: now.Add(time.Hour * 24 * 3)}, // starred
+		{
+			GUID:   "item112",
+			FeedId: feed11.Id,
+			Title:  "title112",
+			Date:   now.Add(time.Hour * 24 * 2),
+		}, // read
+		{
+			GUID:   "item113",
+			FeedId: feed11.Id,
+			Title:  "title113",
+			Date:   now.Add(time.Hour * 24 * 3),
+		}, // starred
 		// feed12
 		{GUID: "item121", FeedId: feed12.Id, Title: "title121", Date: now.Add(time.Hour * 24 * 4)},
-		{GUID: "item122", FeedId: feed12.Id, Title: "title122", Date: now.Add(time.Hour * 24 * 5)}, // read
+		{
+			GUID:   "item122",
+			FeedId: feed12.Id,
+			Title:  "title122",
+			Date:   now.Add(time.Hour * 24 * 5),
+		}, // read
 		// feed21
-		{GUID: "item211", FeedId: feed21.Id, Title: "title211", Date: now.Add(time.Hour * 24 * 6)}, // read
-		{GUID: "item212", FeedId: feed21.Id, Title: "title212", Date: now.Add(time.Hour * 24 * 7)}, // starred
+		{
+			GUID:   "item211",
+			FeedId: feed21.Id,
+			Title:  "title211",
+			Date:   now.Add(time.Hour * 24 * 6),
+		}, // read
+		{
+			GUID:   "item212",
+			FeedId: feed21.Id,
+			Title:  "title212",
+			Date:   now.Add(time.Hour * 24 * 7),
+		}, // starred
 		// feed01
 		{GUID: "item011", FeedId: feed01.Id, Title: "title011", Date: now.Add(time.Hour * 24 * 8)},
-		{GUID: "item012", FeedId: feed01.Id, Title: "title012", Date: now.Add(time.Hour * 24 * 9)},  // read
-		{GUID: "item013", FeedId: feed01.Id, Title: "title013", Date: now.Add(time.Hour * 24 * 10)}, // starred
+		{
+			GUID:   "item012",
+			FeedId: feed01.Id,
+			Title:  "title012",
+			Date:   now.Add(time.Hour * 24 * 9),
+		}, // read
+		{
+			GUID:   "item013",
+			FeedId: feed01.Id,
+			Title:  "title013",
+			Date:   now.Add(time.Hour * 24 * 10),
+		}, // starred
 	})
-	db.db.Exec(`update items set status = ? where guid in ("item112", "item122", "item211", "item012")`, READ)
-	db.db.Exec(`update items set status = ? where guid in ("item113", "item212", "item013")`, STARRED)
+	db.db.Exec(
+		`update items set status = :status where guid in ("item112", "item122", "item211", "item012")`,
+		sql.Named("status", READ),
+	)
+	db.db.Exec(
+		`update items set status = :status where guid in ("item113", "item212", "item013")`,
+		sql.Named("status", STARRED),
+	)
 
 	return testItemScope{
 		feed11:  feed11,
@@ -79,8 +121,8 @@ func getItem(db *Storage, guid string) *Item {
 			i.id, i.guid, i.feed_id, i.title, i.link, i.content,
 			i.date, i.status, i.media_links
 		from items i
-		where i.guid = ?
-	`, guid).Scan(
+		where i.guid = :guid
+	`, sql.Named("guid", guid)).Scan(
 		&i.Id, &i.GUID, &i.FeedId, &i.Title, &i.Link, &i.Content,
 		&i.Date, &i.Status, &i.MediaLinks,
 	)
@@ -207,7 +249,9 @@ func TestListItemsPaginated(t *testing.T) {
 
 	// unread, newest first
 	unread := UNREAD
-	have = getItemGuids(db.ListItems(ItemFilter{After: &item012.Id, Status: &unread}, 3, true, false))
+	have = getItemGuids(
+		db.ListItems(ItemFilter{After: &item012.Id, Status: &unread}, 3, true, false),
+	)
 	want = []string{"item011", "item121", "item111"}
 	if !reflect.DeepEqual(have, want) {
 		t.Logf("want: %#v", want)
@@ -217,7 +261,9 @@ func TestListItemsPaginated(t *testing.T) {
 
 	// starred, oldest first
 	starred := STARRED
-	have = getItemGuids(db.ListItems(ItemFilter{After: &item121.Id, Status: &starred}, 3, false, false))
+	have = getItemGuids(
+		db.ListItems(ItemFilter{After: &item121.Id, Status: &starred}, 3, false, false),
+	)
 	want = []string{"item212", "item013"}
 	if !reflect.DeepEqual(have, want) {
 		t.Logf("want: %#v", want)
@@ -295,7 +341,7 @@ func TestDeleteOldItems(t *testing.T) {
 	db.SetFeedSize(feed.Id, itemsKeepSize)
 	var feedSize int
 	err := db.db.QueryRow(
-		`select size from feed_sizes where feed_id = ?`, feed.Id,
+		`select size from feed_sizes where feed_id = :feed_id`, sql.Named("feed_id", feed.Id),
 	).Scan(&feedSize)
 	if err != nil {
 		t.Fatal(err)
@@ -310,9 +356,9 @@ func TestDeleteOldItems(t *testing.T) {
 
 	// expire only the first 3 articles
 	_, err = db.db.Exec(
-		`update items set date_arrived = ?
+		`update items set date_arrived = :date_arrived
 		where id in (select id from items limit 3)`,
-		now.Add(-time.Hour*time.Duration(itemsKeepDays*24)),
+		sql.Named("date_arrived", now.Add(-time.Hour*time.Duration(itemsKeepDays*24))),
 	)
 	if err != nil {
 		t.Fatal(err)
