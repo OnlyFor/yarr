@@ -135,14 +135,15 @@ func (s *Storage) CreateItems(items []Item) bool {
 			insert into items (
 				guid, feed_id, title, link, date,
 				content, media_links,
-				date_arrived, status
+				date_arrived, last_arrived, status
 			)
 			values (
 				:guid, :feed_id, :title, :link, strftime('%Y-%m-%d %H:%M:%f', :date),
 				:content, :media_links,
-				:date_arrived, :status
+				:date_arrived, :last_arrived, :status
 			)
-			on conflict (feed_id, guid) do nothing`,
+			on conflict (feed_id, guid) do update set
+				last_arrived = :last_arrived`,
 			sql.Named("guid", item.GUID),
 			sql.Named("feed_id", item.FeedId),
 			sql.Named("title", item.Title),
@@ -151,6 +152,7 @@ func (s *Storage) CreateItems(items []Item) bool {
 			sql.Named("content", item.Content),
 			sql.Named("media_links", item.MediaLinks),
 			sql.Named("date_arrived", now),
+			sql.Named("last_arrived", now),
 			sql.Named("status", UNREAD),
 		)
 		if err != nil {
@@ -169,9 +171,9 @@ func (s *Storage) CreateItems(items []Item) bool {
 	return true
 }
 
-func listQueryPredicate(filter ItemFilter, newestFirst bool) (string, []interface{}) {
+func listQueryPredicate(filter ItemFilter, newestFirst bool) (string, []any) {
 	cond := make([]string, 0)
-	args := make([]interface{}, 0)
+	args := make([]any, 0)
 	if filter.FolderID != nil {
 		cond = append(cond, "i.feed_id in (select id from feeds where folder_id = :folder_id)")
 		args = append(args, sql.Named("folder_id", *filter.FolderID))
@@ -247,7 +249,7 @@ func (s *Storage) CountItems(filter ItemFilter) int {
 	var count int
 	query := fmt.Sprintf(`
 		select count(*)
-		from items
+		from items i
 		where %s
 		`, predicate)
 	err := s.db.QueryRow(query, args...).Scan(&count)
@@ -433,67 +435,35 @@ var (
 //
 // The rules:
 //   - Never delete starred entries.
-//   - Keep at least the same amount of articles the feed provides (default: 50).
-//     This prevents from deleting items for rarely updated and/or ever-growing
-//     feeds which might eventually reappear as unread.
-//   - Keep entries for a certain period (default: 90 days).
+//   - Keep at least 50 latest items for each feed.
+//   - Delete entries older than 90 days relative to the latest arrived item in the same feed.
 func (s *Storage) DeleteOldItems() {
-	rows, err := s.db.Query(`
-		select
-			i.feed_id,
-			max(coalesce(s.size, 0), :keep_size) as max_items,
-			count(*) as num_items
-		from items i
-		left outer join feed_sizes s on s.feed_id = i.feed_id
-		where status != :starred_status
-		group by i.feed_id
-	`,
-		sql.Named("keep_size", itemsKeepSize),
+	result, err := s.db.Exec(`
+		delete from items
+		where id in (
+			select id
+			from (
+				select
+					id,
+					row_number() over (partition by feed_id order by date desc) as rn,
+					last_arrived,
+					max(last_arrived) over (partition by feed_id) as max_la
+				from items
+				where status != :starred_status
+			)
+			where rn > :keep_size
+			  and last_arrived < datetime(max_la, :keep_days_limit)
+		)`,
 		sql.Named("starred_status", STARRED),
+		sql.Named("keep_size", itemsKeepSize),
+		sql.Named("keep_days_limit", fmt.Sprintf("-%d days", itemsKeepDays)),
 	)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-
-	feedLimits := make(map[int64]int64, 0)
-	for rows.Next() {
-		var feedId, limit int64
-		rows.Scan(&feedId, &limit, nil)
-		feedLimits[feedId] = limit
-	}
-
-	for feedId, limit := range feedLimits {
-		result, err := s.db.Exec(
-			`
-			delete from items
-			where id in (
-				select i.id
-				from items i
-				where i.feed_id = :feed_id and status != :starred_status
-				order by date desc
-				limit -1 offset :limit
-			) and date_arrived < :date_limit
-			`,
-			sql.Named("feed_id", feedId),
-			sql.Named("starred_status", STARRED),
-			sql.Named("limit", limit),
-			sql.Named(
-				"date_limit",
-				time.Now().UTC().Add(-time.Hour*time.Duration(24*itemsKeepDays)),
-			),
-		)
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		numDeleted, err := result.RowsAffected()
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		if numDeleted > 0 {
-			log.Printf("Deleted %d old items (feed: %d)", numDeleted, feedId)
-		}
+	numDeleted, err := result.RowsAffected()
+	if err == nil && numDeleted > 0 {
+		log.Printf("Deleted %d old items", numDeleted)
 	}
 }
