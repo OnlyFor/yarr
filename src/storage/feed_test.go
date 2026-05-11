@@ -56,11 +56,9 @@ func TestUpdateFeed(t *testing.T) {
 
 	title := "newtitle"
 	db.UpdateFeed(feed1.Id, UpdateFeedParams{
-		Title:          &title,
-		FolderID:       &folder.Id,
-		UpdateFolderID: true,
-		Icon:           &icon,
-		UpdateIcon:     true,
+		Title:    &title,
+		FolderID: SetNullable(&folder.Id),
+		Icon:     SetNullable(&icon),
 	})
 
 	feed2 := db.GetFeed(feed1.Id)

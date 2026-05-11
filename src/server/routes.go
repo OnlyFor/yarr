@@ -292,10 +292,11 @@ func (s *Server) handleFeed(c *router.Context) {
 			}
 		}
 		if f_id, ok := body["folder_id"]; ok {
-			params.UpdateFolderID = true
-			if reflect.TypeOf(f_id).Kind() == reflect.Float64 {
+			if f_id == nil {
+				params.FolderID = storage.SetNullable[int64](nil)
+			} else if reflect.TypeOf(f_id).Kind() == reflect.Float64 {
 				folderId := int64(f_id.(float64))
-				params.FolderID = &folderId
+				params.FolderID = storage.SetNullable(&folderId)
 			}
 		}
 		if link, ok := body["feed_link"]; ok {

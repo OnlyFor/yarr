@@ -65,30 +65,28 @@ func (s *Storage) DeleteFeed(feedId int64) bool {
 }
 
 type UpdateFeedParams struct {
-	Title          *string
-	FeedLink       *string
-	FolderID       *int64
-	UpdateFolderID bool
-	Icon           *[]byte
-	UpdateIcon     bool
+	Title    *string
+	FeedLink *string
+	FolderID Nullable[int64]
+	Icon     Nullable[[]byte]
 }
 
 func (s *Storage) UpdateFeed(feedId int64, params UpdateFeedParams) (bool, error) {
 	_, err := s.db.Exec(`
 		update feeds set
-			title = coalesce(:title, title),
+			title     = coalesce(:title, title),
 			feed_link = coalesce(:feed_link, feed_link),
 			folder_id = case when :update_folder_id then :folder_id else folder_id end,
-			icon = case when :update_icon then :icon else icon end
+			icon      = case when :update_icon then :icon else icon end
 		where id = :id
 	`,
 		sql.Named("id", feedId),
 		sql.Named("title", params.Title),
 		sql.Named("feed_link", params.FeedLink),
-		sql.Named("update_folder_id", params.UpdateFolderID),
-		sql.Named("folder_id", params.FolderID),
-		sql.Named("update_icon", params.UpdateIcon),
-		sql.Named("icon", params.Icon),
+		sql.Named("update_folder_id", params.FolderID.Set),
+		sql.Named("folder_id", params.FolderID.Value),
+		sql.Named("update_icon", params.Icon.Set),
+		sql.Named("icon", params.Icon.Value),
 	)
 	if err != nil {
 		log.Print(err)
