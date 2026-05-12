@@ -12,6 +12,15 @@ type Storage struct {
 	db *sql.DB
 }
 
+type Nullable[T any] struct {
+	Set   bool
+	Value *T
+}
+
+func SetNullable[T any](v *T) Nullable[T] {
+	return Nullable[T]{Set: true, Value: v}
+}
+
 func New(path string) (*Storage, error) {
 	// sql.Register("sqlite3_with_extensions",
 	// 	&sqlite3.SQLiteDriver{
