@@ -1,3 +1,5 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+
 [v-cloak] {
   display: none !important;
 }
@@ -333,6 +335,9 @@ select.form-control:not([multiple]):not([size]) {
   border-radius: 3px;
   padding: .25rem .5rem;
   line-height: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .toolbar-search:hover, .toolbar-search:focus {
@@ -442,6 +447,20 @@ button.theme-light {
   background-color: #fff !important;
 }
 
+.theme-swatch {
+  padding: 0;
+  border: none;
+  height: 2.375rem;
+}
+
+.theme-swatch.theme-system {
+  background-image: linear-gradient(135deg, #fff 0, #fff 35%, #0e0e0e 65%, #0e0e0e 100%);
+}
+
+.theme-swatch[aria-pressed="true"] {
+  border: 0.3rem solid #0080d4;
+}
+
 a,
 .btn-link:hover {
   color: #0080d4;
@@ -514,6 +533,39 @@ a,
 .theme-night .dropdown-menu,
 .theme-night .modal-content {
   border-color: #1a1a1a;
+}
+
+/* theme: system follows the system color scheme */
+
+@media (prefers-color-scheme: dark) {
+  .theme-system,
+  .theme-system .btn-default,
+  .theme-system .dropdown-menu,
+  .theme-system .dropdown-item,
+  .theme-system .form-control,
+  .theme-system .modal-content,
+  .theme-system .toolbar-search {
+    color: #d1d1d1;
+    background-color: #0e0e0e;
+  }
+  .theme-system .content hr,
+  .theme-system .content pre,
+  .theme-system .border-right,
+  .theme-system .border-top,
+  .theme-system .dropdown-divider {
+    border-color: #1a1a1a !important;
+  }
+  .theme-system .selectgroup-label:hover,
+  .theme-system .dropdown-item:hover,
+  .theme-system .toolbar-item:hover,
+  .theme-system .toolbar-search:hover,
+  .theme-system .toolbar-search:focus {
+    background-color: #1a1a1a;
+  }
+  .theme-system .dropdown-menu,
+  .theme-system .modal-content {
+    border-color: #1a1a1a !important;
+  }
 }
 
 /* animation */
@@ -608,4 +660,16 @@ a,
   .toolbar-search {
     padding: .5rem;
   }
+}
+
+.login-page {
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.login-page .logo svg {
+  width: 4rem;
+  height: 4rem;
+  display: block;
+  margin: 3rem auto;
 }
