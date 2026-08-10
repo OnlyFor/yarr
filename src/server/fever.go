@@ -80,8 +80,9 @@ func (s *Server) feverAuth(c *router.Context) bool {
 		if !auth.StringsEqual(apiKey, hexMD5HashValue) {
 			return false
 		}
+		return true
 	}
-	return true
+	return false
 }
 
 func formHasValue(values url.Values, value string) bool {
@@ -231,7 +232,7 @@ func (s *Server) feverItemsHandler(c *router.Context) {
 	switch {
 	case query.Get("with_ids") != "":
 		ids := make([]int64, 0)
-		for _, idstr := range strings.Split(query.Get("with_ids"), ",") {
+		for idstr := range strings.SplitSeq(query.Get("with_ids"), ",") {
 			if idnum, err := strconv.ParseInt(idstr, 10, 64); err == nil {
 				ids = append(ids, idnum)
 			}

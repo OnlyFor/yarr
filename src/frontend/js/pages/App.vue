@@ -1,6 +1,5 @@
 <template>
   <div
-    id="app"
     class="d-flex"
     :class="{
       'feed-selected': feedSelected !== null,
@@ -9,31 +8,28 @@
     <!-- feed list -->
     <div
       id="col-feed-list"
-      class="vh-100 position-relative d-flex flex-column border-right flex-shrink-0"
+      class="vh-100 position-relative d-flex flex-column border-end flex-shrink-0"
       :style="{ width: feedListWidth + 'px' }">
       <v-drag :width="feedListWidth" @resize="resizeFeedList"></v-drag>
-      <div class="p-2 toolbar d-flex align-items-center">
+      <div class="px-2 py-1 d-flex align-items-center">
         <v-icon class="mx-2" name="anchor" />
         <div class="flex-grow-1"></div>
         <button
-          class="toolbar-item ml-1"
-          :class="{ active: filterSelected == 'unread' }"
+          class="c-button-pill ms-1"
           :aria-pressed="filterSelected == 'unread'"
           :title="$t('unread')"
           @click="filterSelected = 'unread'">
           <v-icon name="circle-full" />
         </button>
         <button
-          class="toolbar-item mx-1"
-          :class="{ active: filterSelected == 'starred' }"
+          class="c-button-pill mx-1"
           :aria-pressed="filterSelected == 'starred'"
           :title="$t('starred')"
           @click="filterSelected = 'starred'">
           <v-icon name="star-full" />
         </button>
         <button
-          class="toolbar-item mr-1"
-          :class="{ active: filterSelected == '' }"
+          class="c-button-pill me-1"
           :aria-pressed="filterSelected == ''"
           :title="$t('all')"
           @click="filterSelected = ''">
@@ -41,8 +37,7 @@
         </button>
         <div class="flex-grow-1"></div>
         <v-dropdown
-          class="settings-dropdown"
-          toggle-class="btn btn-link toolbar-item px-2"
+          toggle-class="c-button-link c-button-pill px-2"
           ref="menuDropdown"
           drop="right"
           :title="$t('settings')">
@@ -50,24 +45,24 @@
             <v-icon name="more-horizontal" />
           </template>
 
-          <button class="dropdown-item" @click="showSettings('create')">
-            <v-icon class="mr-1" name="plus" />
+          <button class="c-dropdown-item w-100 text-start" @click="showModal = 'newfeed'">
+            <v-icon class="me-1" name="plus" />
             {{ $t("new_feed") }}
           </button>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item" @click="fetchAllFeeds()">
-            <v-icon class="mr-1" name="rotate-cw" />
+          <div class="c-dropdown-divider"></div>
+          <button class="c-dropdown-item w-100 text-start" @click="fetchAllFeeds()">
+            <v-icon class="me-1" name="rotate-cw" />
             {{ $t("refresh_feeds") }}
           </button>
 
-          <div class="dropdown-divider"></div>
+          <div class="c-dropdown-divider"></div>
 
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ $t("theme") }}
           </header>
           <div class="row text-center m-0">
             <button
-              class="btn btn-link theme-swatch col-3 px-0 rounded-0"
+              class="c-button-link theme-swatch col-3 px-0 rounded-0"
               :class="'theme-' + t"
               :title="t"
               :aria-label="t"
@@ -76,52 +71,52 @@
               v-for="t in ['light', 'sepia', 'night', 'system']"></button>
           </div>
 
-          <div class="dropdown-divider"></div>
+          <div class="c-dropdown-divider"></div>
 
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ $t("auto_refresh") }}
           </header>
           <div class="row text-center m-0">
             <button
-              class="dropdown-item col-4 px-0"
+              class="c-dropdown-item col-4 px-0"
               @click.stop="changeRefreshRate(-1)"
               :disabled="!refreshRate">
               <v-icon name="chevron-down" />
             </button>
-            <div class="col-4 d-flex align-items-center justify-content-center">
+            <div class="col-4 d-flex align-items-center justify-content-center user-select-none">
               {{ refreshRateTitle }}
             </div>
             <button
-              class="dropdown-item col-4 px-0"
+              class="c-dropdown-item col-4 px-0"
               @click.stop="changeRefreshRate(1)"
               :disabled="refreshRate === refreshRateOptions[refreshRateOptions.length - 1].value">
               <v-icon name="chevron-up" />
             </button>
           </div>
 
-          <div class="dropdown-divider"></div>
+          <div class="c-dropdown-divider"></div>
 
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ $t("show_first") }}
           </header>
-          <div class="d-flex text-center">
+          <div class="d-flex">
             <button
-              class="dropdown-item px-0"
+              class="flex-fill c-dropdown-item text-center"
               :aria-pressed="itemSortNewestFirst"
               :class="{ active: itemSortNewestFirst }"
               @click.stop="itemSortNewestFirst = true">
               {{ $t("new") }}
             </button>
             <button
-              class="dropdown-item px-0"
+              class="flex-fill c-dropdown-item text-center"
               :aria-pressed="!itemSortNewestFirst"
               :class="{ active: !itemSortNewestFirst }"
               @click.stop="itemSortNewestFirst = false">
               {{ $t("old") }}
             </button>
           </div>
-          <div class="dropdown-divider"></div>
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <div class="c-dropdown-divider"></div>
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ $t("subscriptions") }}
           </header>
           <form enctype="multipart/form-data" tabindex="-1" ref="opmlInputForm">
@@ -131,43 +126,46 @@
               @change="importOPML"
               name="opml"
               style="opacity: 0; width: 1px; height: 0; position: absolute; z-index: -1" />
-            <label class="dropdown-item mb-0 cursor-pointer" for="opml-import" @click.stop="">
-              <v-icon class="mr-1" name="download" />
+            <label
+              class="c-dropdown-item mb-0 cursor-pointer w-100"
+              for="opml-import"
+              @click.stop="">
+              <v-icon class="me-1" name="download" />
               {{ $t("import") }}
             </label>
           </form>
-          <a class="dropdown-item" href="./opml/export">
-            <v-icon class="mr-1" name="upload" />
+          <a class="c-dropdown-item d-block text-start text-decoration-none" href="./opml/export">
+            <v-icon class="me-1" name="upload" />
             {{ $t("export") }}
           </a>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item" @click="showSettings('shortcuts')">
-            <v-icon class="mr-1" name="help-circle" />
+          <div class="c-dropdown-divider"></div>
+          <button class="c-dropdown-item w-100 text-start" @click="showModal = 'shortcuts'">
+            <v-icon class="me-1" name="help-circle" />
             {{ $t("shortcuts") }}
           </button>
-          <div class="dropdown-divider"></div>
-          <header class="dropdown-header" role="heading" aria-level="2">A / あ / 文</header>
+          <div class="c-dropdown-divider"></div>
+          <header class="c-dropdown-header" role="heading" aria-level="2">A / あ / 文</header>
           <div class="container">
             <div class="row">
               <button
                 v-for="lang in languages"
-                class="dropdown-item text-center col-3 px-0"
+                class="c-dropdown-item text-center col-3 px-0"
                 :aria-label="lang.name"
+                :aria-pressed="language === lang.code"
                 :title="lang.name"
-                :class="{ active: language == lang.code }"
                 @click.stop="changeLanguage(lang.code)">
                 {{ lang.code }}
               </button>
             </div>
           </div>
-          <div class="dropdown-divider" v-if="requiresAuth"></div>
-          <button class="dropdown-item" v-if="requiresAuth" @click="logout()">
-            <v-icon class="mr-1" name="log-out" />
+          <div class="c-dropdown-divider" v-if="requiresAuth"></div>
+          <button class="c-dropdown-item w-100 text-start" v-if="requiresAuth" @click="logout()">
+            <v-icon class="me-1" name="log-out" />
             {{ $t("log_out") }}
           </button>
         </v-dropdown>
       </div>
-      <div id="feed-list-scroll" class="p-2 overflow-auto scroll-touch border-top flex-grow-1">
+      <div id="feed-list-scroll" class="p-2 overflow-auto border-top flex-grow-1">
         <v-feedtree
           :tree="feedTree"
           v-model="feedSelected"
@@ -177,10 +175,10 @@
           @toggle-folder="toggleFolderExpanded" />
       </div>
       <div
-        class="p-2 toolbar d-flex align-items-center border-top flex-shrink-0"
+        class="px-2 py-1 d-flex align-items-center border-top flex-shrink-0"
         v-if="loading.feeds">
-        <span class="icon loading mx-2"></span>
-        <span class="text-truncate cursor-default noselect">{{
+        <span class="c-spinner mx-2"></span>
+        <span class="text-truncate cursor-default user-select-none">{{
           $t("refreshing_progress", { count: loading.feeds })
         }}</span>
       </div>
@@ -188,169 +186,177 @@
     <!-- item list -->
     <div
       id="col-item-list"
-      class="vh-100 position-relative d-flex flex-column border-right flex-shrink-0"
+      class="vh-100 position-relative d-flex flex-column border-end flex-shrink-0"
       :style="{ width: itemListWidth + 'px' }">
       <v-drag :width="itemListWidth" @resize="resizeItemList"></v-drag>
-      <div class="px-2 toolbar d-flex align-items-center">
+      <div class="px-2 py-1 d-flex gap-1 align-items-center">
         <button
-          class="toolbar-item mr-2 d-block d-md-none"
+          class="c-button-pill d-md-none"
           @click="feedSelected = null"
           :title="$t('show_feeds')">
           <v-icon name="chevron-left" />
         </button>
-        <div class="input-icon flex-grow-1">
+        <div class="c-search flex-grow-1">
           <v-icon name="search" />
           <!-- id used by keybindings -->
           <input
             id="searchbar"
-            type=""
-            class="d-block toolbar-search"
+            class="d-block"
             v-model="itemSearch"
             :placeholder="$t('search_placeholder', { scope: searchScope })"
             @keydown.enter="($event.target as HTMLInputElement).blur()" />
         </div>
         <button
-          class="toolbar-item ml-2"
+          class="c-button-pill"
           @click="markItemsRead()"
           v-if="filterSelected == 'unread'"
           :title="$t('mark_all_read')">
           <v-icon name="check" />
         </button>
 
-        <button class="btn btn-link toolbar-item px-2 ml-2" v-if="!current.type" disabled>
+        <button class="c-button-link c-button-pill px-2" v-if="!current.type" disabled>
           <v-icon name="more-horizontal" />
         </button>
         <v-dropdown
-          class="settings-dropdown"
-          toggle-class="btn btn-link toolbar-item px-2 ml-2"
+          toggle-class="c-button-link c-button-pill px-2"
           drop="right"
           :title="$t('feed_settings')"
           v-if="current?.feed?.id">
           <template v-slot:button>
             <v-icon name="more-horizontal" />
           </template>
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ current?.feed?.title }}
           </header>
           <a
-            class="dropdown-item"
+            class="c-dropdown-item d-block text-start text-decoration-none"
             :href="current?.feed?.link"
             rel="noopener noreferrer"
             target="_blank"
             referrerpolicy="no-referrer"
             v-if="current?.feed?.link">
-            <v-icon class="mr-1" name="globe" />
+            <v-icon class="me-1" name="globe" />
             {{ $t("website") }}
           </a>
           <a
-            class="dropdown-item"
+            class="c-dropdown-item d-block text-start text-decoration-none"
             :href="current.feed.feed_link"
             rel="noopener noreferrer"
             target="_blank"
             referrerpolicy="no-referrer"
             v-if="current.feed.feed_link">
-            <v-icon class="mr-1" name="rss" />
+            <v-icon class="me-1" name="rss" />
             {{ $t("feed_link") }}
           </a>
-          <div class="dropdown-divider" v-if="current.feed.link || current.feed.feed_link"></div>
-          <button class="dropdown-item" @click="renameFeed(current.feed)">
-            <v-icon class="mr-1" name="edit" />
+          <div class="c-dropdown-divider" v-if="current.feed.link || current.feed.feed_link"></div>
+          <button class="c-dropdown-item w-100 text-start" @click="renameFeed(current.feed)">
+            <v-icon class="me-1" name="edit" />
             {{ $t("rename") }}
           </button>
           <button
-            class="dropdown-item"
+            class="c-dropdown-item w-100 text-start"
             @click="updateFeedLink(current.feed)"
             v-if="current.feed.feed_link">
-            <v-icon class="mr-1" name="edit" />
+            <v-icon class="me-1" name="edit" />
             {{ $t("change_link") }}
           </button>
-          <div class="dropdown-divider"></div>
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <div class="c-dropdown-divider"></div>
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ $t("move_to") }}
           </header>
           <template v-for="folder in folders">
             <button
-              class="dropdown-item"
+              class="c-dropdown-item w-100 text-start"
               v-if="folder.id != current.feed.folder_id"
               @click="moveFeed(current.feed, folder.id)">
-              <v-icon class="mr-1" name="folder" />
+              <v-icon class="me-1" name="folder" />
               {{ folder.title }}
             </button>
           </template>
           <button
-            class="dropdown-item text-muted"
+            class="c-dropdown-item w-100 text-start opacity-75"
             @click="moveFeed(current.feed, null)"
             v-if="current.feed.folder_id">
-            <v-icon class="mr-1" name="folder-minus" />
+            <v-icon class="me-1" name="folder-minus" />
             ──
           </button>
-          <button class="dropdown-item text-muted" @click="moveFeedToNewFolder(current.feed)">
-            <v-icon class="mr-1" name="folder-plus" />
+          <button
+            class="c-dropdown-item w-100 text-start opacity-75"
+            @click="moveFeedToNewFolder(current.feed)">
+            <v-icon class="me-1" name="folder-plus" />
             {{ $t("new_folder") }}
           </button>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item text-danger" @click.prevent="deleteFeed(current.feed)">
-            <v-icon class="mr-1" name="trash" />
+          <div class="c-dropdown-divider"></div>
+          <button
+            class="c-dropdown-item w-100 text-start text-danger"
+            @click.prevent="deleteFeed(current.feed)">
+            <v-icon class="me-1" name="trash" />
             {{ $t("delete") }}
           </button>
         </v-dropdown>
         <v-dropdown
-          class="settings-dropdown"
-          toggle-class="btn btn-link toolbar-item px-2 ml-2"
+          toggle-class="c-button-link c-button-pill px-2"
           :title="$t('folder_settings')"
           drop="right"
           v-if="current?.folder?.id">
           <template v-slot:button>
             <v-icon name="more-horizontal" />
           </template>
-          <header class="dropdown-header" role="heading" aria-level="2">
+          <header class="c-dropdown-header" role="heading" aria-level="2">
             {{ current?.folder?.title }}
           </header>
-          <button class="dropdown-item" @click="renameFolder(current.folder)">
-            <v-icon class="mr-1" name="edit" />
+          <button class="c-dropdown-item w-100 text-start" @click="renameFolder(current.folder)">
+            <v-icon class="me-1" name="edit" />
             {{ $t("rename") }}
           </button>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item text-danger" @click="deleteFolder(current.folder)">
-            <v-icon class="mr-1" name="trash" />
+          <div class="c-dropdown-divider"></div>
+          <button
+            class="c-dropdown-item w-100 text-start text-danger"
+            @click="deleteFolder(current.folder)">
+            <v-icon class="me-1" name="trash" />
             {{ $t("delete") }}
           </button>
         </v-dropdown>
       </div>
       <div
         id="item-list-scroll"
-        class="p-2 overflow-auto scroll-touch border-top flex-grow-1"
+        class="d-flex flex-column p-2 overflow-auto border-top flex-grow-1 gap-1"
         v-scroll="loadMoreItems"
         ref="itemlist">
         <div
           v-for="item in items"
           :key="item.id"
-          class="selectgroup"
+          class="c-listitem d-flex flex-column user-select-none"
           role="radio"
           :aria-checked="itemSelected === item.id"
           @click="itemSelected = item.id">
-          <div class="selectgroup-label d-flex flex-column">
-            <div
-              style="line-height: 100%; opacity: 0.7; margin-bottom: 0.1rem"
-              class="d-flex align-items-center">
-              <transition name="indicator">
-                <v-icon class="icon-small mr-1" name="circle-full" v-if="item.status == 'unread'" />
-                <v-icon
-                  class="icon-small mr-1"
-                  name="star-full"
-                  v-else-if="item.status == 'starred'" />
-              </transition>
-              <small class="flex-fill text-truncate mr-1">
-                {{ (feedsById[item.feed_id] || {}).title }}
-              </small>
-              <small class="flex-shrink-0"
-                ><v-relative-time v-bind:title="formatDate(item.date)" :val="item.date"
-              /></small>
-            </div>
-            <div>{{ item.title || $t("untitled") }}</div>
+          <div
+            style="line-height: 100%; opacity: 0.7; margin-bottom: 0.1rem"
+            class="d-flex align-items-center">
+            <transition name="indicator">
+              <v-icon
+                :small="true"
+                class="me-1"
+                name="circle-full"
+                v-if="item.status == 'unread'" />
+              <v-icon
+                :small="true"
+                class="me-1"
+                name="star-full"
+                v-else-if="item.status == 'starred'" />
+            </transition>
+            <small class="flex-fill text-truncate me-1">
+              {{ (feedsById[item.feed_id] || {}).title }}
+            </small>
+            <small class="flex-shrink-0"
+              ><v-relative-time v-bind:title="formatDate(item.date)" :val="item.date"
+            /></small>
           </div>
+          <div class="text-break line-clamp-3">{{ item.title || $t("untitled") }}</div>
         </div>
-        <button class="btn btn-link btn-block loading my-3" v-if="itemsHasMore"></button>
+        <div class="text-center my-3" v-if="itemsHasMore">
+          <span class="c-spinner"></span>
+        </div>
       </div>
       <div
         class="px-3 py-2 border-top text-danger text-break"
@@ -360,67 +366,69 @@
     </div>
     <!-- item show -->
     <div id="col-item" class="vh-100 d-flex flex-column w-100" style="min-width: 0">
-      <div class="toolbar px-2 d-flex align-items-center" v-if="itemSelectedDetails">
+      <div class="px-2 py-1 d-flex gap-1 align-items-center" v-if="itemSelectedDetails">
         <button
-          class="toolbar-item"
+          class="c-button-pill"
           @click="toggleItemStarred(itemSelectedDetails)"
           :title="$t('mark_starred')">
           <v-icon name="star-full" v-if="itemSelectedDetails.status == 'starred'" />
           <v-icon name="star" v-else />
         </button>
         <button
-          class="toolbar-item"
+          class="c-button-pill"
           :title="$t('mark_unread')"
           @click="toggleItemRead(itemSelectedDetails)">
           <v-icon name="circle-full" v-if="itemSelectedDetails.status == 'unread'" />
           <v-icon name="circle" v-else />
         </button>
-        <v-dropdown
-          class="settings-dropdown"
-          toggle-class="toolbar-item px-2"
-          drop="center"
-          :title="$t('appearance')">
+        <v-dropdown toggle-class="c-button-pill px-2" drop="center" :title="$t('appearance')">
           <template v-slot:button>
             <v-icon name="sliders" />
           </template>
 
           <button
-            class="dropdown-item"
-            :class="{ active: !theme.font }"
+            class="c-dropdown-item w-100 text-start font-sans-serif"
+            :aria-pressed="theme.font == ''"
             @click.stop="theme.font = ''">
             {{ $t("sans_serif") }}
           </button>
           <button
-            class="dropdown-item font-serif"
-            :class="{ active: theme.font == 'serif' }"
+            class="c-dropdown-item w-100 text-start font-serif"
+            :aria-pressed="theme.font == 'serif'"
             @click.stop="theme.font = 'serif'">
             {{ $t("serif") }}
           </button>
           <button
-            class="dropdown-item font-monospace"
-            :class="{ active: theme.font == 'monospace' }"
+            class="c-dropdown-item w-100 text-start font-monospace"
+            :aria-pressed="theme.font == 'monospace'"
             @click.stop="theme.font = 'monospace'">
             {{ $t("monospace") }}
           </button>
 
           <div class="d-flex text-center">
-            <button class="dropdown-item" style="font-size: 0.8rem" @click.stop="incrFont(-1)">
+            <button
+              class="c-dropdown-item flex-fill"
+              style="font-size: 0.8rem"
+              @click.stop="incrFont(-1)">
               A
             </button>
-            <button class="dropdown-item" style="font-size: 1.2rem" @click.stop="incrFont(1)">
+            <button
+              class="c-dropdown-item flex-fill"
+              style="font-size: 1.2rem"
+              @click.stop="incrFont(1)">
               A
             </button>
           </div>
         </v-dropdown>
         <button
-          class="toolbar-item"
-          :class="{ active: itemSelectedReadability }"
+          class="c-button-pill"
+          :aria-pressed="!!itemSelectedReadability"
           @click="toggleReadability()"
           :title="$t('read_here')">
-          <v-icon :class="{ 'icon-loading': loading.readability }" name="book-open" />
+          <v-icon :class="{ 'is-loading': loading.readability }" name="book-open" />
         </button>
         <a
-          class="toolbar-item"
+          class="c-button-pill"
           :href="itemSelectedDetails.link"
           rel="noopener noreferrer"
           target="_blank"
@@ -430,28 +438,29 @@
         </a>
         <div class="flex-grow-1"></div>
         <button
-          class="toolbar-item"
+          class="c-button-pill"
           @click="navigateToItem(-1)"
           :title="$t('previous_article')"
           :disabled="!items.length || itemSelected == items[0].id">
           <v-icon name="chevron-left" />
         </button>
         <button
-          class="toolbar-item"
+          class="c-button-pill"
           @click="navigateToItem(+1)"
           :title="$t('next_article')"
           :disabled="!items.length || itemSelected == items[items.length - 1].id">
           <v-icon name="chevron-right" />
         </button>
-        <button class="toolbar-item" @click="itemSelected = null" :title="$t('close_article')">
+        <button class="c-button-pill" @click="itemSelected = null" :title="$t('close_article')">
           <v-icon name="x" />
         </button>
       </div>
       <div
         v-if="itemSelectedDetails"
         ref="content"
-        class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch"
+        class="content px-4 pt-3 pb-5 border-top overflow-auto"
         :class="{
+          'font-sans-serif': theme.font == '',
           'font-serif': theme.font == 'serif',
           'font-monospace': theme.font == 'monospace',
         }"
@@ -460,7 +469,7 @@
           <h1>
             <b>{{ itemSelectedDetails.title || $t("untitled") }}</b>
           </h1>
-          <div class="text-muted">
+          <div class="opacity-50">
             <div>
               <span
                 class="cursor-pointer"
@@ -487,157 +496,38 @@
         </div>
       </div>
     </div>
-    <v-modal :open="!!settings" @hide="settings = ''">
+    <v-modal :open="showModal !== ''" @hide="showModal = ''">
       <button
-        class="btn btn-link outline-none float-right p-2 mr-n2 mt-n2"
+        class="c-button-link outline-none position-absolute top-0 end-0 p-2 m-2"
         style="line-height: 1"
-        @click="settings = ''">
+        @click="showModal = ''">
         <v-icon name="x" />
       </button>
-      <div v-if="settings == 'create'">
-        <p class="cursor-default">
-          <b>{{ $t("new_feed") }}</b>
-        </p>
-        <form action="" @submit.prevent="createFeed($event)" class="mt-4">
-          <label for="feed-url">{{ $t("url") }}</label>
-          <input
-            id="feed-url"
-            name="url"
-            type="url"
-            class="form-control"
-            required
-            autocomplete="off"
-            :readonly="feedNewChoice.length > 0"
-            placeholder="https://example.com/feed"
-            v-focus />
-          <label for="feed-folder" class="mt-3 d-block">
-            {{ $t("folder") }}
-            <a
-              href="#"
-              class="float-right text-decoration-none"
-              @click.prevent="createNewFeedFolder()"
-              >{{ $t("new_folder") }}</a
-            >
-          </label>
-          <select class="form-control" id="feed-folder" name="folder_id" ref="newFeedFolder">
-            <option value="">---</option>
-            <option
-              :value="folder.id"
-              v-for="folder in folders"
-              :selected="
-                folder.id === current?.feed?.folder_id || folder.id === current?.folder?.id
-              ">
-              {{ folder.title }}
-            </option>
-          </select>
-          <div class="mt-4" v-if="feedNewChoice.length">
-            <p class="mb-2">
-              {{ $t("multiple_feeds_found") }}
-              <a
-                href="#"
-                class="float-right text-decoration-none"
-                @click.prevent="resetFeedChoice()"
-                >{{ $t("cancel") }}</a
-              >
-            </p>
-            <div
-              class="selectgroup"
-              role="radio"
-              :aria-checked="feedNewChoiceSelected === choice.url"
-              @click="feedNewChoiceSelected = choice.url"
-              v-for="choice in feedNewChoice">
-              <div class="selectgroup-label">
-                <div class="text-truncate">{{ choice.title }}</div>
-                <div class="text-truncate" :class="{ light: choice.title }">
-                  {{ choice.url }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <button
-            class="btn btn-block btn-default mt-3"
-            :class="{ loading: loading.newfeed }"
-            type="submit">
-            {{ $t("add") }}
-          </button>
-        </form>
-      </div>
-      <div v-else-if="settings == 'shortcuts'">
-        <p class="cursor-default">
-          <b>{{ $t("keyboard_shortcuts") }}</b>
-        </p>
-
-        <table class="table table-borderless table-sm table-compact m-0">
-          <tbody>
-            <tr>
-              <td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td>
-              <td>{{ $t("kb_show_filters") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>/</kbd></td>
-              <td>{{ $t("kb_focus_search") }}</td>
-            </tr>
-
-            <tr>
-              <td colspan="2">&nbsp;</td>
-            </tr>
-            <tr>
-              <td><kbd>j</kbd> <kbd>k</kbd></td>
-              <td>{{ $t("kb_next_prev_article") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>l</kbd> <kbd>h</kbd></td>
-              <td>{{ $t("kb_next_prev_feed") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>q</kbd></td>
-              <td>{{ $t("kb_close_article") }}</td>
-            </tr>
-
-            <tr>
-              <td colspan="2">&nbsp;</td>
-            </tr>
-            <tr>
-              <td><kbd>R</kbd></td>
-              <td>{{ $t("kb_mark_all_read") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>r</kbd></td>
-              <td>{{ $t("kb_mark_read") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>s</kbd></td>
-              <td>{{ $t("kb_mark_starred") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>o</kbd></td>
-              <td>{{ $t("kb_open_link") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>i</kbd></td>
-              <td>{{ $t("kb_read_here") }}</td>
-            </tr>
-            <tr>
-              <td><kbd>f</kbd> <kbd>b</kbd></td>
-              <td>{{ $t("kb_scroll_content") }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <v-newfeed
+        v-if="showModal === 'newfeed'"
+        :folders="folders"
+        :folder-id="current?.feed?.folder_id ?? current?.folder?.id ?? null"
+        @created="onFeedCreated"
+        @folder-created="refreshFeeds" />
+      <v-shortcuts v-else-if="showModal === 'shortcuts'" />
     </v-modal>
+    <v-toast ref="toast" />
   </div>
 </template>
 
 <script lang="ts">
 import type { Lang } from "../i18n";
-import api from "../api";
-import { scrollto, debounce, debounceMixin } from "../utils";
+import api, { NetworkError, HTTPError } from "../api";
+import { scrollto, debounce, debounceMixin, to } from "../utils";
 import drag from "../components/drag.vue";
 import dropdown from "../components/dropdown.vue";
 import modal from "../components/modal.vue";
+import shortcuts from "../components/shortcuts.vue";
 import relativeTime from "../components/relative-time.vue";
 import icon from "../components/icon.vue";
 import feedTree from "../components/feedtree.vue";
+import newfeed from "../components/newfeed.vue";
+import toast from "../components/toast.vue";
 import type { FeedTreeNode, TreeFeedNode, TreeFolderNode } from "../components/feedtree.vue";
 import scrollDir from "../directives/scroll";
 import focusDir from "../directives/focus";
@@ -647,16 +537,25 @@ import type {
   Folder,
   Item,
   FeedStat,
-  FeedLink,
   MediaLink,
   ItemStatus,
-  FeedCreateData,
   ItemListQuery,
   ItemMarkQuery,
 } from "../api-types";
-import { InterfaceType } from "typescript";
 
 var app = window.app;
+
+declare module "vue" {
+  interface ComponentCustomProperties {
+    $refs: {
+      itemlist: HTMLElement;
+      content: HTMLElement;
+      opmlInputForm: HTMLFormElement;
+      menuDropdown: InstanceType<typeof dropdown>;
+      toast: InstanceType<typeof toast>;
+    };
+  }
+}
 
 type Theme = "system" | "light" | "sepia" | "night";
 type ThemeFont = "" | "serif" | "monospace";
@@ -672,28 +571,45 @@ export default defineComponent({
     "v-drag": drag,
     "v-dropdown": dropdown,
     "v-modal": modal,
+    "v-shortcuts": shortcuts,
     "v-relative-time": relativeTime,
     "v-icon": icon,
     "v-feedtree": feedTree,
+    "v-newfeed": newfeed,
+    "v-toast": toast,
   },
   directives: {
     scroll: scrollDir,
     focus: focusDir,
   },
-  created() {
-    this.refreshStats()
-      .then(() => this.refreshFeeds())
-      .then(() => {
-        this.refreshItems(false);
-        this.computeStats();
-      });
-
+  async created() {
     this.updateMetaTheme();
-    this.$setLang(app.settings.language);
+    this.$t.set(document.documentElement.lang as Lang);
 
     // keep the theme-color meta tag in sync when the OS color scheme changes
     this._colorSchemeMql = window.matchMedia("(prefers-color-scheme: dark)");
     this._colorSchemeMql.addEventListener("change", this.updateMetaTheme);
+
+    const [statsErr] = await to(this.refreshStats());
+    if (statsErr) {
+      this.$refs.toast.addToast(
+        { title: this.$t("fail_load"), description: this.errDescription(statsErr) },
+        { level: "fail", closeable: false },
+      );
+    }
+
+    const [feedsErr] = await to(this.refreshFeeds());
+    if (feedsErr) {
+      this.$refs.toast.addToast(
+        { title: this.$t("fail_load"), description: this.errDescription(feedsErr) },
+        { level: "fail", closeable: false },
+      );
+    }
+
+    if (!feedsErr) {
+      this.refreshItems(false);
+      this.computeStats();
+    }
   },
   beforeUnmount() {
     this._colorSchemeMql?.removeEventListener("change", this.updateMetaTheme);
@@ -706,8 +622,6 @@ export default defineComponent({
       feeds: [] as Feed[],
       feedSelected: s.feed,
       feedListWidth: s.feed_list_width || 300,
-      feedNewChoice: [] as FeedLink[],
-      feedNewChoiceSelected: "",
       items: [] as Item[],
       itemsHasMore: true,
       itemSelected: null as number | null,
@@ -723,10 +637,9 @@ export default defineComponent({
         total: Stats;
       },
 
-      settings: "",
+      showModal: "" as "" | "shortcuts" | "newfeed",
       loading: {
         feeds: 0,
-        newfeed: false,
         items: false,
         readability: false,
       },
@@ -743,7 +656,6 @@ export default defineComponent({
         light: "#fff",
       },
       refreshRate: s.refresh_rate,
-      authenticated: app.authenticated,
       requiresAuth: app.requiresAuth,
       feed_errors: {} as Record<number, string>,
 
@@ -806,10 +718,22 @@ export default defineComponent({
       ];
     },
     feedsById(): Record<number, Feed> {
-      return this.feeds.reduce((acc, f) => ({ ...acc, [f.id]: f }), {});
+      return this.feeds.reduce(
+        (acc, f) => {
+          acc[f.id] = f;
+          return acc;
+        },
+        {} as Record<number, Feed>,
+      );
     },
     foldersById(): Record<number, Folder> {
-      return this.folders.reduce((acc, f) => ({ ...acc, [f.id]: f }), {});
+      return this.folders.reduce(
+        (acc, f) => {
+          acc[f.id] = f;
+          return acc;
+        },
+        {} as Record<number, Folder>,
+      );
     },
     current(): { type: string; feed: Feed | null; folder: Folder | null } {
       var parts = (this.feedSelected || "").split(":", 2);
@@ -822,7 +746,6 @@ export default defineComponent({
       return { type: type, feed: feed, folder: folder };
     },
     searchScope(): string {
-      void this.language;
       var type = (this.feedSelected || "").split(":", 2)[0];
       if (type == "feed")
         return (this.feedsById[this.feedSelected.split(":", 2)[1]] || {}).title || "";
@@ -859,12 +782,21 @@ export default defineComponent({
       deep: true,
       handler(theme) {
         this.updateMetaTheme();
-        document.body.classList.value = "theme-" + theme.name;
-        api.settings.update({
-          theme_name: theme.name,
-          theme_font: theme.font,
-          theme_size: theme.size,
-        });
+        (async () => {
+          const [err, _] = await to(
+            api.settings.update({
+              theme_name: theme.name,
+              theme_font: theme.font,
+              theme_size: theme.size,
+            }),
+          );
+          if (err) {
+            this.$refs.toast.addToast(
+              { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+              { level: "fail", closeable: false },
+            );
+          }
+        })();
       },
     },
     feedStats: {
@@ -873,61 +805,123 @@ export default defineComponent({
         this.$debounce("watch:feedStats", this.computeStats, 500);
       },
     },
-    filterSelected(newVal, oldVal) {
-      if (oldVal === undefined) return; // do nothing, initial setup
+    async filterSelected(newVal, oldVal) {
+      if (oldVal === undefined) return;
       this.itemSelected = null;
       this.items = [];
       this.itemsHasMore = true;
-      api.settings.update({ filter: newVal }).then(() => this.refreshItems(false));
+
+      const [err] = await to(api.settings.update({ filter: newVal }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.refreshItems(false);
       this.computeStats();
     },
-    feedSelected(newVal, oldVal) {
-      if (oldVal === undefined) return; // do nothing, initial setup
+    async feedSelected(newVal, oldVal) {
+      if (oldVal === undefined) return;
       this.itemSelected = null;
       this.items = [];
       this.itemsHasMore = true;
-      api.settings.update({ feed: newVal }).then(() => this.refreshItems(false));
-      if (this.$refs.itemlist) (this.$refs.itemlist as HTMLElement).scrollTop = 0;
+
+      this.refreshItems(false);
+      if (this.$refs.itemlist) this.$refs.itemlist.scrollTop = 0;
+
+      const [err] = await to(api.settings.update({ feed: newVal }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+      }
     },
-    itemSelected(newVal, oldVal) {
+    async itemSelected(newVal, oldVal) {
       this.itemSelectedReadability = "";
       if (newVal === null) {
         this.itemSelectedDetails = null;
         return;
       }
-      if (this.$refs.content) (this.$refs.content as HTMLElement).scrollTop = 0;
+      if (this.$refs.content) this.$refs.content.scrollTop = 0;
 
-      api.items.get(newVal).then(item => {
-        this.itemSelectedDetails = item;
-        const details = this.itemSelectedDetails;
-        if (details.status == "unread") {
-          api.items.update(details.id, { status: "read" }).then(() => {
-            this.feedStats[details.feed_id].unread -= 1;
-            var itemInList = this.items.find(i => i.id == item.id);
-            if (itemInList) itemInList.status = "read";
-            details.status = "read";
-          });
+      const [itemErr, item] = await to(api.items.get(newVal));
+      if (itemErr) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_load"), description: this.errDescription(itemErr) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.itemSelectedDetails = item;
+      const details = this.itemSelectedDetails;
+      if (details.status == "unread") {
+        const [updateErr] = await to(api.items.update(details.id, { status: "read" }));
+        if (updateErr) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_update_article"), description: this.errDescription(updateErr) },
+            { level: "fail", closeable: false },
+          );
+          return;
         }
-      });
+        this.feedStats[details.feed_id].unread -= 1;
+        var itemInList = this.items.find(i => i.id == item.id);
+        if (itemInList) itemInList.status = "read";
+        details.status = "read";
+      }
     },
     itemSearch() {
       this.$debounce("watch:itemSearch", this.refreshItems, 500);
     },
-    itemSortNewestFirst(newVal, oldVal) {
-      if (oldVal === undefined) return; // do nothing, initial setup
-      api.settings.update({ sort_newest_first: newVal }).then(() => this.refreshItems(false));
+    async itemSortNewestFirst(newVal, oldVal) {
+      if (oldVal === undefined) return;
+      const [err] = await to(api.settings.update({ sort_newest_first: newVal }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.refreshItems(false);
     },
     feedListWidth: debounce(function (newVal, oldVal) {
       if (oldVal === undefined) return; // do nothing, initial setup
       api.settings.update({ feed_list_width: newVal });
+
+      // const [err] = await to(api.settings.update({ feed_list_width: newVal }));
+      // if (err) {
+      //   this.$refs.toast.addToast(
+      //     { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+      //     { level: "fail", closeable: false },
+      //   );
+      // }
     }, 1000),
     itemListWidth: debounce(function (newVal, oldVal) {
       if (oldVal === undefined) return; // do nothing, initial setup
       api.settings.update({ item_list_width: newVal });
+
+      // const [err] = await to(api.settings.update({ item_list_width: newVal }));
+      // if (err) {
+      //   this.$refs.toast.addToast(
+      //     { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+      //     { level: "fail", closeable: false },
+      //   );
+      // }
     }, 1000),
     refreshRate(newVal, oldVal) {
-      if (oldVal === undefined) return; // do nothing, initial setup
-      api.settings.update({ refresh_rate: newVal });
+      if (oldVal === undefined) return;
+      (async () => {
+        const [err] = await to(api.settings.update({ refresh_rate: newVal }));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+        }
+      })();
     },
   },
   methods: {
@@ -939,21 +933,36 @@ export default defineComponent({
       }
       const metaTag: HTMLMetaElement | null = document.querySelector("meta[name='theme-color']");
       metaTag && (metaTag.content = this.themeColors[theme]);
+
+      document.documentElement.dataset.theme = this.theme.name;
     },
-    refreshStats(loopMode?: boolean) {
-      return api.status().then(data => {
-        if (loopMode && !this.itemSelected) this.refreshItems();
+    async refreshStats(loopMode?: boolean) {
+      const [err, data] = await to(api.status());
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_load"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
 
-        this.loading.feeds = data.running;
-        if (data.running) {
-          setTimeout(() => this.refreshStats(true), 500);
-        }
-        this.feedStats = data.stats.reduce((acc, stat) => ({ ...acc, [stat.feed_id]: stat }), {});
+      if (loopMode && !this.itemSelected) this.refreshItems();
 
-        api.feeds.list_errors().then(errors => {
-          this.feed_errors = errors;
-        });
-      });
+      this.loading.feeds = data.running;
+      if (data.running) {
+        setTimeout(() => this.refreshStats(true), 500);
+      }
+      this.feedStats = data.stats.reduce((acc, stat) => ({ ...acc, [stat.feed_id]: stat }), {});
+
+      const [feedErr, errors] = await to(api.feeds.list_errors());
+      if (feedErr) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_load"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.feed_errors = errors;
     },
     getItemsQuery(): ItemListQuery {
       var query: ItemListQuery = {};
@@ -978,13 +987,19 @@ export default defineComponent({
       }
       return query;
     },
-    refreshFeeds() {
-      return Promise.all([api.folders.list(), api.feeds.list()]).then(values => {
-        this.folders = values[0];
-        this.feeds = values[1];
-      });
+    async refreshFeeds() {
+      const [err, values] = await to(Promise.all([api.folders.list(), api.feeds.list()]));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_load"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.folders = values[0];
+      this.feeds = values[1];
     },
-    refreshItems(loadMore = false) {
+    async refreshItems(loadMore = false) {
       if (this.feedSelected === null) {
         this.items = [];
         this.itemsHasMore = false;
@@ -997,21 +1012,28 @@ export default defineComponent({
       }
 
       this.loading.items = true;
-      return api.items.list(query).then(data => {
-        if (loadMore) {
-          this.items = this.items.concat(data.list);
-        } else {
-          this.items = data.list;
-        }
-        this.itemsHasMore = data.has_more;
-        this.loading.items = false;
+      const [err, data] = await to(api.items.list(query));
+      this.loading.items = false;
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_load"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
 
-        // load more if there's some space left at the bottom of the item list.
-        this.$nextTick(() => {
-          if (this.itemsHasMore && !this.loading.items && this.itemListCloseToBottom()) {
-            this.refreshItems(true);
-          }
-        });
+      if (loadMore) {
+        this.items = this.items.concat(data.list);
+      } else {
+        this.items = data.list;
+      }
+      this.itemsHasMore = data.has_more;
+
+      // load more if there's some space left at the bottom of the item list.
+      this.$nextTick(() => {
+        if (this.itemsHasMore && !this.loading.items && this.itemListCloseToBottom()) {
+          this.refreshItems(true);
+        }
       });
     },
     itemListCloseToBottom() {
@@ -1019,7 +1041,7 @@ export default defineComponent({
       var bottomSpace = 70;
       var scale = (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
 
-      var el = this.$refs.itemlist as HTMLElement;
+      var el = this.$refs.itemlist;
 
       if (!el || el.scrollHeight === 0) return false; // element is invisible (responsive design)
 
@@ -1033,22 +1055,34 @@ export default defineComponent({
       if (this.itemSelected && this.itemSelected === this.items[this.items.length - 1].id)
         return this.refreshItems(true);
     },
-    markItemsRead() {
+    async markItemsRead() {
       const markQuery = this.getItemsQuery();
       const query: ItemMarkQuery = {
         folder_id: markQuery.folder_id,
         feed_id: markQuery.feed_id,
       };
-      api.items.mark_read(query).then(() => {
-        this.items = [];
-        this.itemSelected = null;
-        this.itemsHasMore = false;
-        this.refreshStats();
-      });
+      const [err] = await to(api.items.mark_read(query));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_update_article"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.items = [];
+      this.itemSelected = null;
+      this.itemsHasMore = false;
+      this.refreshStats();
     },
-    toggleFolderExpanded(folder: Folder) {
+    async toggleFolderExpanded(folder: Folder) {
       folder.is_expanded = !folder.is_expanded;
-      api.folders.update(folder.id, { is_expanded: folder.is_expanded });
+      const [err] = await to(api.folders.update(folder.id, { is_expanded: folder.is_expanded }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_folder"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+      }
     },
     formatDate(datestr: string) {
       const options: Intl.DateTimeFormatOptions = {
@@ -1060,109 +1094,123 @@ export default defineComponent({
       };
       return new Date(datestr).toLocaleDateString(undefined, options);
     },
-    moveFeed(feed: Feed, folder_id: number | null) {
-      api.feeds.update(feed.id, { folder_id }).then(() => {
-        feed.folder_id = folder_id;
-        this.refreshStats();
-      });
+    async moveFeed(feed: Feed, folder_id: number | null) {
+      const [err] = await to(api.feeds.update(feed.id, { folder_id }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_feed"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      feed.folder_id = folder_id;
+      this.refreshStats();
     },
-    moveFeedToNewFolder(feed: Feed) {
+    async moveFeedToNewFolder(feed: Feed) {
       const title = prompt(this.$t("prompt_folder_name"));
       if (!title) return;
-      api.folders.create({ title: title }).then(folder => {
-        api.feeds.update(feed.id, { folder_id: folder.id }).then(() => {
-          this.refreshFeeds().then(() => {
-            this.refreshStats();
-          });
-        });
-      });
+
+      const [folderErr, folder] = await to(api.folders.create({ title: title }));
+      if (folderErr) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_folder"), description: this.errDescription(folderErr) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+
+      const [updateErr] = await to(api.feeds.update(feed.id, { folder_id: folder.id }));
+      if (updateErr) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_feed"), description: this.errDescription(updateErr) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+
+      const [feedsErr] = await to(this.refreshFeeds());
+      if (!feedsErr) this.refreshStats();
     },
-    createNewFeedFolder() {
-      const title = prompt(this.$t("prompt_folder_name"));
-      if (!title) return;
-      api.folders.create({ title: title }).then(result => {
-        this.refreshFeeds().then(() => {
-          this.$nextTick(() => {
-            if (this.$refs.newFeedFolder) {
-              (this.$refs.newFeedFolder as HTMLSelectElement).value = String(result.id);
-            }
-          });
-        });
-      });
-    },
-    renameFolder(folder: Folder) {
+    async renameFolder(folder: Folder) {
       const newTitle = prompt(this.$t("prompt_new_title"), folder.title);
       if (newTitle) {
-        api.folders.update(folder.id, { title: newTitle }).then(() => {
-          folder.title = newTitle;
-          this.folders.sort((a, b) => a.title.localeCompare(b.title));
-        });
+        const [err] = await to(api.folders.update(folder.id, { title: newTitle }));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_folder"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+          return;
+        }
+        folder.title = newTitle;
+        this.folders.sort((a, b) => a.title.localeCompare(b.title));
       }
     },
-    deleteFolder(folder: Folder) {
+    async deleteFolder(folder: Folder) {
       if (confirm(this.$t("confirm_delete", { name: folder.title }))) {
-        api.folders.delete(folder.id).then(() => {
-          this.feedSelected = null;
-          this.refreshStats();
-          this.refreshFeeds();
-        });
+        const [err] = await to(api.folders.delete(folder.id));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_folder"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+          return;
+        }
+        this.feedSelected = null;
+        this.refreshStats();
+        this.refreshFeeds();
       }
     },
-    updateFeedLink(feed: Feed) {
+    async updateFeedLink(feed: Feed) {
       const newLink = prompt(this.$t("prompt_feed_link"), feed.feed_link);
       if (newLink !== null) {
-        api.feeds.update(feed.id, { feed_link: newLink }).then(() => {
-          feed.feed_link = newLink;
-        });
+        const [err] = await to(api.feeds.update(feed.id, { feed_link: newLink }));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_feed"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+          return;
+        }
+        feed.feed_link = newLink;
       }
     },
-    renameFeed(feed: Feed) {
+    async renameFeed(feed: Feed) {
       const newTitle = prompt(this.$t("prompt_new_title"), feed.title);
       if (newTitle) {
-        api.feeds.update(feed.id, { title: newTitle }).then(() => {
-          feed.title = newTitle;
-        });
-      }
-    },
-    deleteFeed(feed: Feed) {
-      if (confirm(this.$t("confirm_delete", { name: feed.title }))) {
-        api.feeds.delete(feed.id).then(() => {
-          this.feedSelected = null;
-          this.refreshStats();
-          this.refreshFeeds();
-        });
-      }
-    },
-    createFeed($event: Event) {
-      var form = $event.target as HTMLFormElement;
-      var data: FeedCreateData = {
-        url: (form.querySelector("input[name=url]") as HTMLInputElement).value,
-        folder_id:
-          parseInt((form.querySelector("select[name=folder_id]") as HTMLSelectElement).value) ||
-          null,
-      };
-      if (this.feedNewChoiceSelected) {
-        var choice = this.feedNewChoice.find(c => c.url === this.feedNewChoiceSelected);
-        data.url = this.feedNewChoiceSelected;
-        if (choice && choice.title_override) data.title_override = choice.title_override;
-      }
-      this.loading.newfeed = true;
-      api.feeds.create(data).then(result => {
-        if (result.status === "success") {
-          this.refreshFeeds();
-          this.refreshStats();
-          this.settings = "";
-          this.feedSelected = "feed:" + result.feed.id;
-        } else if (result.status === "multiple") {
-          this.feedNewChoice = result.choice;
-          this.feedNewChoiceSelected = result.choice[0].url;
-        } else {
-          alert("No feeds found at the given url.");
+        const [err] = await to(api.feeds.update(feed.id, { title: newTitle }));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_feed"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+          return;
         }
-        this.loading.newfeed = false;
-      });
+        feed.title = newTitle;
+      }
     },
-    toggleItemStatus(item: Item, targetstatus: ItemStatus) {
+    async deleteFeed(feed: Feed) {
+      if (confirm(this.$t("confirm_delete", { name: feed.title }))) {
+        const [err] = await to(api.feeds.delete(feed.id));
+        if (err) {
+          this.$refs.toast.addToast(
+            { title: this.$t("fail_save_feed"), description: this.errDescription(err) },
+            { level: "fail", closeable: false },
+          );
+          return;
+        }
+        this.feedSelected = null;
+        this.refreshStats();
+        this.refreshFeeds();
+      }
+    },
+    onFeedCreated(feed: Feed) {
+      this.refreshFeeds();
+      this.refreshStats();
+      this.showModal = "";
+      this.feedSelected = "feed:" + feed.id;
+    },
+    async toggleItemStatus(item: Item, targetstatus: ItemStatus) {
       const fallbackstatus: ItemStatus = "read";
       const oldstatus = item.status;
       const newstatus = item.status !== targetstatus ? targetstatus : fallbackstatus;
@@ -1173,14 +1221,21 @@ export default defineComponent({
         }
       };
 
-      api.items.update(item.id, { status: newstatus }).then(() => {
-        updateStats(oldstatus, -1);
-        updateStats(newstatus, +1);
+      const [err] = await to(api.items.update(item.id, { status: newstatus }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_update_article"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
 
-        var itemInList = this.items.find(i => i.id == item.id);
-        if (itemInList) itemInList.status = newstatus;
-        item.status = newstatus;
-      });
+      updateStats(oldstatus, -1);
+      updateStats(newstatus, +1);
+
+      var itemInList = this.items.find(i => i.id == item.id);
+      if (itemInList) itemInList.status = newstatus;
+      item.status = newstatus;
     },
     toggleItemStarred(item: Item) {
       this.toggleItemStatus(item, "starred");
@@ -1188,42 +1243,51 @@ export default defineComponent({
     toggleItemRead(item: Item) {
       this.toggleItemStatus(item, "unread");
     },
-    importOPML(event: Event) {
+    async importOPML(event: Event) {
       const input = event.target as HTMLInputElement;
-      const form = this.$refs.opmlInputForm as HTMLFormElement;
-      (this.$refs.menuDropdown as InstanceType<typeof dropdown>).hide();
-      api.upload_opml(form).then(() => {
-        input.value = "";
-        this.refreshFeeds();
-        this.refreshStats();
-      });
+      const form = this.$refs.opmlInputForm;
+      this.$refs.menuDropdown.hide();
+      const [err] = await to(api.upload_opml(form));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_import"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      input.value = "";
+      this.refreshFeeds();
+      this.refreshStats();
     },
-    logout() {
-      api.logout().then(() => {
-        document.location.reload();
-      });
+    async logout() {
+      const [err] = await to(api.logout());
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_logout"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      document.location.reload();
     },
-    toggleReadability() {
+    async toggleReadability() {
       if (this.itemSelectedReadability) {
         this.itemSelectedReadability = "";
         return;
       }
       var item = this.itemSelectedDetails;
-      if (!item) return;
-      if (item.link) {
-        this.loading.readability = true;
-        api.crawl(item.link).then(data => {
-          this.itemSelectedReadability = data && data.content;
-          this.loading.readability = false;
-        });
-      }
-    },
-    showSettings(settings: string) {
-      this.settings = settings;
+      if (!item?.link) return;
+      this.loading.readability = true;
+      const [err, data] = await to(api.crawl(item!.link));
+      this.loading.readability = false;
 
-      if (settings === "create") {
-        this.feedNewChoice = [];
-        this.feedNewChoiceSelected = "";
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_readability"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+      } else {
+        this.itemSelectedReadability = data?.content || "";
       }
     },
     resizeFeedList(width: number) {
@@ -1232,18 +1296,20 @@ export default defineComponent({
     resizeItemList(width: number) {
       this.itemListWidth = Math.min(Math.max(200, width), 700);
     },
-    resetFeedChoice() {
-      this.feedNewChoice = [];
-      this.feedNewChoiceSelected = "";
-    },
     incrFont(x: number) {
       this.theme.size = +(this.theme.size + 0.1 * x).toFixed(1);
     },
-    fetchAllFeeds() {
+    async fetchAllFeeds() {
       if (this.loading.feeds) return;
-      api.feeds.refresh().then(() => {
-        this.refreshStats();
-      });
+      const [err] = await to(api.feeds.refresh());
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_refresh"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+        return;
+      }
+      this.refreshStats();
     },
     computeStats() {
       let statsFeeds: Record<number, Stats> = {},
@@ -1363,10 +1429,22 @@ export default defineComponent({
         (!this.itemSelectedDetails || this.itemSelectedDetails.feed_id != feed.id)
       );
     },
-    changeLanguage(lang: Lang) {
-      this.$setLang(lang);
+    async changeLanguage(lang: Lang) {
+      this.$t.set(lang);
       this.language = lang;
-      api.settings.update({ language: lang });
+      const [err] = await to(api.settings.update({ language: lang }));
+      if (err) {
+        this.$refs.toast.addToast(
+          { title: this.$t("fail_save_settings"), description: this.errDescription(err) },
+          { level: "fail", closeable: false },
+        );
+      }
+    },
+    errDescription(err: unknown): string | undefined {
+      if (err instanceof HTTPError)
+        return this.$t("error_server", { code: err.status, text: err.statusText });
+      if (err instanceof NetworkError) return this.$t("error_network");
+      return undefined;
     },
   },
 });

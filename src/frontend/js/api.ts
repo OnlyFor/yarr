@@ -17,6 +17,22 @@ import type {
   ItemMarkQuery,
 } from "./api-types";
 
+export class HTTPError extends Error {
+  status: number;
+  statusText: string;
+  constructor(res: Response) {
+    super(res.statusText);
+    this.status = res.status;
+    this.statusText = res.statusText;
+  }
+}
+
+export class NetworkError extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
 type ApiOptions = {
   json?: object;
   body?: BodyInit;
@@ -44,7 +60,15 @@ function api(method: string, endpoint: string, opts: ApiOptions = {}) {
     init.body = JSON.stringify(json);
   }
 
-  return fetch(url, init);
+  return fetch(url, init)
+    .catch(err => {
+      if (err instanceof TypeError) throw new NetworkError(err.message);
+      throw err;
+    })
+    .then(res => {
+      if (!res.ok) throw new HTTPError(res);
+      return res;
+    });
 }
 
 function json<T>(res: Response): Promise<T> {
