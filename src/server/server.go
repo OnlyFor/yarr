@@ -8,29 +8,24 @@ import (
 	"strings"
 
 	"github.com/nkanaev/yarr/src/storage"
-	"github.com/nkanaev/yarr/src/worker"
 )
 
 type Server struct {
-	Addr   string
-	db     storage.Storage
-	worker *worker.Worker
-
+	Addr     string
 	BasePath string
 
-	// auth
-	Username string
-	Password string
+	Storage   StorageProvider
+	Scheduler FeedScheduler
+	Auth      AuthProvider
+
 	// https
 	CertFile string
 	KeyFile  string
 }
 
-func NewServer(db storage.Storage, addr string) *Server {
+func NewServer(addr string) *Server {
 	return &Server{
-		db:     db,
-		Addr:   addr,
-		worker: worker.NewWorker(db),
+		Addr: addr,
 	}
 }
 
@@ -42,11 +37,11 @@ func (h *Server) GetAddr() string {
 	return proto + "://" + h.Addr + h.BasePath
 }
 
-func (s *Server) Start() {
-	refreshRate := s.db.GetSettings().RefreshRate
-	s.worker.StartFeedCleaner()
-	s.worker.SetRefreshRate(refreshRate)
+func (s *Server) db(r *http.Request) storage.Storage {
+	return s.Storage.GetStorage(r)
+}
 
+func (s *Server) Start() {
 	var ln net.Listener
 	var err error
 
@@ -64,7 +59,7 @@ func (s *Server) Start() {
 		log.Fatal(err)
 	}
 
-	httpserver := &http.Server{Handler: s.handler()}
+	httpserver := &http.Server{Handler: s.Handler()}
 	if s.CertFile != "" && s.KeyFile != "" {
 		err = httpserver.ServeTLS(ln, s.CertFile, s.KeyFile)
 		ln.Close()
