@@ -1,11 +1,11 @@
-# upcoming
+# v2.9 (2026-09-07)
 
 - (new) show API errors notifications
 - (fix) delayed initial render of feeds (thanks to @Digitalone1 for the report)
 - (fix) changing font size for articles (thanks to @iredmail for the report)
 - (fix) handling malformed authfiles
 - (fix) article dates translations
-- (etc) cosmetic UI changes
+- (etc) cosmetic UI changes and fixes
 - (etc) frontend refactoring (vue 2 -> 3, bootstrap 4 -> 5)
 
 # v2.8 (2026-07-16)
