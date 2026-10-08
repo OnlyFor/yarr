@@ -76,7 +76,7 @@ func (s *Server) feverAuth(r *http.Request) bool {
 	}
 	apiKey := r.FormValue("api_key")
 	apiKey = strings.ToLower(apiKey)
-	if !middleware.StringsEqual(apiKey, s.Auth.FeverAPIKey()) {
+	if !middleware.StringsEqual(apiKey, s.Auth.FeverAPIKey(r)) {
 		return false
 	}
 	return true
@@ -341,6 +341,7 @@ func (s *Server) feverMarkHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64)
 	if err != nil {
 		log.Print("invalid id:", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -360,10 +361,11 @@ func (s *Server) feverMarkHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		s.db(r).UpdateItemStatus(id, status)
+		s.db(r).UpdateItem(id, model.UpdateItemParams{Status: &status})
 	case "feed":
 		if r.Form.Get("as") != "read" {
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		markFilter := model.MarkFilter{FeedID: &id}
 		x, _ := strconv.ParseInt(r.Form.Get("before"), 10, 64)
@@ -375,6 +377,7 @@ func (s *Server) feverMarkHandler(w http.ResponseWriter, r *http.Request) {
 	case "group":
 		if r.Form.Get("as") != "read" {
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 		markFilter := model.MarkFilter{}
 		if id > 0 {
